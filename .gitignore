@@ -33,3 +33,6 @@ report.html
 !.gitkeep
 !.travis.yml
 !src/mediashop
+.batou-lock
+.batou
+work
