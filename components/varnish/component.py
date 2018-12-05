@@ -17,16 +17,16 @@ class Varnish(Component):
         self.haproxy = self.require_one('haproxy:frontend')
 
         self += Build(
-            'http://varnish-cache.org/_downloads/varnish-3.0.2.tgz',
-            checksum='sha1:906f1536cb7e728d18d9425677907ae723943df7')
-
-        self += File('etc/varnish/zhkath.vcl', source='zhkath.vcl')
+            'https://varnish-cache.org/_downloads/varnish-4.1.10.tgz',
+            checksum='sha1:094e9c6d1775832b2d0ac01302bc6959b64ff25b',
+        )
+        self += File('zhkath.vcl', source='zhkath.vcl')
         self += Program(
             'varnish',
             priority=20,
             command='sbin/varnishd',
             args=self.expand(
-                '-F -f etc/varnish/zhkath.vcl '
+                '-F -f {{component.workdir}}/zhkath.vcl '
                 '-T localhost:{{component.control_port}} '
                 '-a {{component.address.listen}} -p thread_pool_min=10 '
                 '-p thread_pool_max=50 -s malloc,250M'))
@@ -44,5 +44,7 @@ class PurgeCache(Component):
     def update(self):
         self.cmd(self.expand(
             '{{component.varnishadm}}'
+            ' -S {{component.workdir}}/var/varnish/ikath/_.secret'
             ' -T "localhost:{{component.parent.control_port}}"'
-            ' "ban.url .*"'))
+            ' "ban req.url ~ .*"')
+        )
