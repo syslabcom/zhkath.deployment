@@ -29,7 +29,10 @@ class Varnish(Component):
                 '-F -f {{component.workdir}}/zhkath.vcl '
                 '-T localhost:{{component.control_port}} '
                 '-a {{component.address.listen}} -p thread_pool_min=10 '
-                '-p thread_pool_max=50 -s malloc,250M'))
+                '-p thread_pool_max=50 -s malloc,250M '
+                '-n zhkath'
+            )
+        )
 
         self += PurgeCache()
 
@@ -44,7 +47,7 @@ class PurgeCache(Component):
     def update(self):
         self.cmd(self.expand(
             '{{component.varnishadm}}'
-            ' -S {{component.workdir}}/var/varnish/ikath/_.secret'
+            ' -S {{component.workdir}}/var/varnish/zhkath/_.secret'
             ' -T "localhost:{{component.parent.control_port}}"'
             ' "ban req.url ~ .*"')
         )
