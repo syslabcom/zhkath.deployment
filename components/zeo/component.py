@@ -11,16 +11,17 @@ class ZEO(Component):
     profile = 'base'
     eggs_directory = '{{component.environment.workdir_base}}/eggs'
 
+
     def configure(self):
         self.common = self.require_one('common', host=self.host)
         self.provide('zhkath:zeo:server', self.address)
         self += Directory('download-cache')
+        self.eggs_directory = self.expand(self.eggs_directory)
         self += Buildout(
             python='2.7',
             setuptools='40.0.0',
             version='2.12.1',
         )
-
         self += Program(
             'zeo',
             options={'startsecs': 30},
