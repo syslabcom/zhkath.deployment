@@ -1,10 +1,10 @@
 from batou.component import Attribute
 from batou.component import Component
 from batou.lib.buildout import Buildout
-from batou.lib.supervisor import Program
-from batou.utils import Address
 from batou.lib.file import Directory
 from batou.lib.file import File
+from batou.lib.supervisor import Program
+from batou.utils import Address
 
 
 class Zope(Component):
@@ -49,11 +49,10 @@ class BaseInstance(Component):
 
 
 class Instance1(BaseInstance):
-    "Use defaults"
+    """Use defaults."""
 
 
 class Instance2(BaseInstance):
-    workdir = '{{component.zope.workdir}}'
     address = Attribute(Address, '127.0.0.1:9082')
     script_id = "instance2"
 
