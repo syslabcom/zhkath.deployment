@@ -6,6 +6,8 @@ from batou.utils import Address
 class HAProxy(Component):
 
     address = Attribute(Address, '{{host.fqdn}}:8002')
+    stats_socket = Attribute(str, '/run/haproxy_admin.sock')
+    jail_dir = Attribute(str, '/tmp')
 
     def configure(self):
         self.provide('haproxy:frontend', self)
