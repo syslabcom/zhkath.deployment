@@ -46,7 +46,7 @@ sub vcl_backend_response {
      and then we want to deliver the new one immediately.
      We don't cache the big ones, as they might contain legible preview information */
   if (bereq.url ~ "(image_listing|image_icon|image_tile|image_thumb|image_mini)$") {
-      set beresp.ttl = 1209600s;
+      set beresp.ttl = 14d;
       set beresp.http.cache-control = "max-age=0;s-maxage=1209600";
       set beresp.http.max-age = "0";
       set beresp.http.s-maxage = "1209600";
@@ -55,7 +55,7 @@ sub vcl_backend_response {
   }
 
   /* if we have big images, user can cache them in the local browser cache for a day */
-  if (bereq.url ~ "(image_preview.jpg|image_preview|image_large|@@images/image|dvpdffiles/)$") {
+  if (bereq.url ~ "(image_preview.jpg|image_preview|image_large|@@images/image/small|@@images/image/medium|@@images/image/large|@@images/image/extralarge|dvpdffiles/)$") {
     set beresp.http.cache-control = "max-age=84600;s-maxage=0";
     set beresp.http.max-age = "84600";
     set beresp.http.s-maxage = "0";
@@ -66,7 +66,7 @@ sub vcl_backend_response {
 
   /* Cache Font files, regardless of where they live */
   if (bereq.url ~ "\.(otf|ttf|woff|svg|ico|jpg|gif|png)") {
-      set beresp.ttl = 1209600s;
+      set beresp.ttl = 14d;
       set beresp.http.cache-control = "max-age=1209600;s-maxage=1209600";
       set beresp.http.max-age = "1209600";
       set beresp.http.s-maxage = "1209600";
@@ -77,7 +77,7 @@ sub vcl_backend_response {
 
   /* cache resource files in resource registry */
   if (bereq.url ~ "\.(css|js|kss)$") {
-      set beresp.ttl = 1209600s;
+      set beresp.ttl = 14d;
       set beresp.http.cache-control = "max-age=1209600;s-maxage=1209600";
       set beresp.http.max-age = "1209600";
       set beresp.http.s-maxage = "1209600";
@@ -87,6 +87,9 @@ sub vcl_backend_response {
 
   if (beresp.status >= 400 || beresp.status == 302) {
      set beresp.ttl = 0s;
+  }
+  if (beresp.status >= 500 && beresp.status < 600) {
+    return (abandon);
   }
 
   /* should be the last rule */
