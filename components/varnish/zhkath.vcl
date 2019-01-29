@@ -56,9 +56,11 @@ sub vcl_recv {
     if (req.url ~ "\.(mp3|mp4|mpeg|wav)$") {
         return (hash);
     }
-
+    if (req.url ~ "(\+\+plone\+\+|\+\+theme\+\+)") {
+        return (hash);
+    }
     # get javascript and css from cache
-    if (req.url ~ "(\.(js|css|map)$|\.(js|css)\?version)") {
+    if (req.url ~ "(\.(js|css|map)$|\.(js|css)\?version|\.(js|css)\?t)") {
         return (hash);
     }
     # get pdf from cache
