@@ -23,21 +23,62 @@ sub vcl_recv {
 
     // Remove has_js and Google Analytics __* cookies.
     set req.http.Cookie = regsuball(req.http.Cookie, "(^|;\s*)(__(ut|at)[a-z]+|has_js|_ZopeId)=[^;]*", "");
+    // Remove Matomo / Piwik Cookies
+    set req.http.Cookie = regsuball(req.http.Cookie, "_pk_id=[^;]+(; )?", "");
     // Remove a ";" prefix, if present.
     set req.http.Cookie = regsub(req.http.Cookie, "^;\s*", "");
 
-
+    // No Caching for members, but theme assets
     if (req.http.Authorization || req.http.Cookie ~ "__ac") {
-  	    /* All assests from the theme should be cached anonymously, also from ++plone++static */
-        if (req.url !~ "(\+\+plone\+\+production|\+\+plone\+\+static)") {
-            return (pass);
-        } else {
-          unset req.http.Authorization;
-          unset req.http.Cookie;
-          return (hash);
+        /* All assests from the theme should be cached anonymously */
+        if (req.url ~ "(\+\+plone\+\+|\+\+theme\+\+)") {
+            unset req.http.Authorization;
+            unset req.http.Cookie;
+            return (hash);
         }
     }
+
+    # revalidate content images
+    # # get content images from cache
+    # if (req.url ~ "(/@@images/)") {
+    #     return (hash);
+    # }
+
+    # get any other image from cache
+    if (req.url ~ "\.(svg|ico|jpg|jpeg|gif|png)$") {
+        return (hash);
+    }
+    # get fonts from cache
+    if (req.url ~ "\.(otf|ttf|woff|woff2)$") {
+        return (hash);
+    }
+    # get audio and video from cache
+    if (req.url ~ "\.(mp3|mp4|mpeg|wav)$") {
+        return (hash);
+    }
+
+    # get javascript and css from cache
+    if (req.url ~ "(\.(js|css|map)$|\.(js|css)\?version)") {
+        return (hash);
+    }
+    # get pdf from cache
+    if (req.url ~ "\.(pdf|xls|txt|docx)$") {
+        return (hash);
+    }
+
+    # get everything else from backend
+    return(pass);
+
 }
+
+
+# hash cookies for requests that have them
+sub vcl_hash {
+    if (req.http.Cookie) {
+        hash_data(req.http.Cookie);
+    }
+}
+
 
 sub vcl_backend_response {
 
@@ -76,7 +117,7 @@ sub vcl_backend_response {
   }
 
   /* cache resource files in resource registry */
-  if (bereq.url ~ "\.(css|js|kss)$") {
+  if (bereq.url ~ "\.(css|js)$") {
       set beresp.ttl = 14d;
       set beresp.http.cache-control = "max-age=1209600;s-maxage=1209600";
       set beresp.http.max-age = "1209600";
@@ -88,9 +129,9 @@ sub vcl_backend_response {
   if (beresp.status >= 400 || beresp.status == 302) {
      set beresp.ttl = 0s;
   }
-  if (beresp.status >= 500 && beresp.status < 600) {
-    return (abandon);
-  }
+  # if (beresp.status >= 500 && beresp.status < 600) {
+  #   return (abandon);
+  # }
 
   /* should be the last rule */
   /* don't cache anything that looks like the login form, nor anything that has the __ac cookie */
@@ -101,6 +142,7 @@ sub vcl_backend_response {
 
   return (deliver);
 }
+
 
 sub vcl_deliver {
   set resp.http.X-Hits = obj.hits;
