@@ -1,1 +1,1 @@
-hg+https://bitbucket.org/flyingcircus/batou_ext@855b693#egg=batou_ext
+# hg+https://bitbucket.org/flyingcircus/batou_ext@855b693#egg=batou_ext
