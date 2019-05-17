@@ -1,6 +1,9 @@
 StrictHostKeyChecking no
 Host github.com
     Hostname ssh.github.com
-    User git
+    User zhkathdeployment
     Port 443
-    IdentityFile ~/.ssh/github
+    IdentityFile ~/.ssh/id_rsa
+
+# User zhkathdeployment instead of git
+# zhkathdeployment is collaborator on github repositories
